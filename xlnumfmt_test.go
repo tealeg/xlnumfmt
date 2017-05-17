@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
 func TestIsWhiteSpace(t *testing.T) {
@@ -37,15 +38,30 @@ func TestIsDigit(t *testing.T) {
 	assert.False(t, isDigit('a'))
 }
 
+type ScannerSuite struct {
+	suite.Suite
+}
+
 // NewScanner returns a pointer to a newly allocated Scanner that
 // wraps the provided io.Reader.
-func TestNewScanner(t *testing.T) {
+func (s *ScannerSuite) TestNewScanner() {
 	scanner := NewScanner(bytes.NewBufferString("foo"))
-	assert.NotNil(t, scanner)
-	assert.IsType(t, Scanner{}, *scanner)
+	s.NotNil(scanner)
+	s.IsType(Scanner{}, *scanner)
 	result := make([]byte, 3, 3)
 	count, err := scanner.r.Read(result)
-	assert.Nil(t, err)
-	assert.Equal(t, 3, count)
-	assert.Equal(t, []byte{'f', 'o', 'o'}, result)
+	s.Nil(err)
+	s.Equal(3, count)
+	s.Equal([]byte{'f', 'o', 'o'}, result)
+}
+
+// Scanner.read can read a char
+func (s *ScannerSuite) TestRead() {
+	scanner := NewScanner(bytes.NewBufferString("a"))
+	s.Equal('a', scanner.read())
+
+}
+
+func TestScannerSuite(t *testing.T) {
+	suite.Run(t, new(ScannerSuite))
 }
