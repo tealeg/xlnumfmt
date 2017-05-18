@@ -77,6 +77,46 @@ func (s *ScannerSuite) TestUnread() {
 	s.Equal('a', second)
 }
 
+// Scanner.Scan recognises semicolons
+func (s *ScannerSuite) TestScanHandlesSemicolon() {
+	scanner := NewScanner(bytes.NewBufferString(";"))
+	tok, lit := scanner.Scan()
+	s.Equal(SEMICOLON, tok)
+	s.Equal(";", lit)
+}
+
+// Scanner.Scan recognises opening square braces
+func (s *ScannerSuite) TestScanHandlesOpenSquareBrace() {
+	scanner := NewScanner(bytes.NewBufferString("["))
+	tok, lit := scanner.Scan()
+	s.Equal(OPEN_SQUARE_BRACE, tok)
+	s.Equal("[", lit)
+}
+
+// Scanner.Scan recognises closing square braces
+func (s *ScannerSuite) TestScanHandlesCloseSquareBrace() {
+	scanner := NewScanner(bytes.NewBufferString("]"))
+	tok, lit := scanner.Scan()
+	s.Equal(CLOSE_SQUARE_BRACE, tok)
+	s.Equal("]", lit)
+}
+
+// Scanner.Scan recognises closing square braces
+func (s *ScannerSuite) TestScanHandlesHash() {
+	scanner := NewScanner(bytes.NewBufferString("#"))
+	tok, lit := scanner.Scan()
+	s.Equal(HASH, tok)
+	s.Equal("#", lit)
+}
+
+// Scanner.Scan recognises a bad character
+func (s *ScannerSuite) TestScanHandlesBad() {
+	scanner := NewScanner(bytes.NewBufferString("¡"))
+	tok, lit := scanner.Scan()
+	s.Equal(BAD, tok)
+	s.Equal("¡", lit)
+}
+
 // Scan recognises whitespace and returns the correct type.
 func (s *ScannerSuite) TestScanHandlesWhiteSpeace() {
 	scanner := NewScanner(bytes.NewBufferString(" \t\n "))
