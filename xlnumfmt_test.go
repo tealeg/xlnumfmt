@@ -59,7 +59,36 @@ func (s *ScannerSuite) TestNewScanner() {
 func (s *ScannerSuite) TestRead() {
 	scanner := NewScanner(bytes.NewBufferString("a"))
 	s.Equal('a', scanner.read())
+}
 
+// Scanner.read returns EOF, finally
+func (s *ScannerSuite) TestReadReturnsEOFFinally() {
+	scanner := NewScanner(bytes.NewBufferString(""))
+	s.Equal(eof, scanner.read())
+}
+
+// Scanner.unread sets us back a character
+func (s *ScannerSuite) TestUnread() {
+	scanner := NewScanner(bytes.NewBufferString("ab"))
+	first := scanner.read()
+	scanner.unread()
+	second := scanner.read()
+	s.Equal('a', first)
+	s.Equal('a', second)
+}
+
+func (s *ScannerSuite) TestScanHandlesWhiteSpeace() {
+	scanner := NewScanner(bytes.NewBufferString(" \t\n "))
+	tok, lit := scanner.Scan()
+	s.Equal(WHITESPACE, tok)
+	s.Equal(" \t\n ", lit)
+}
+
+func (s *ScannerSuite) TestScanHaldesScientific() {
+	scanner := NewScanner(bytes.NewBufferString("E+00"))
+	tok, lit := scanner.Scan()
+	s.Equal(SCIENTIFIC, tok)
+	s.Equal("E+00", lit)
 }
 
 func TestScannerSuite(t *testing.T) {

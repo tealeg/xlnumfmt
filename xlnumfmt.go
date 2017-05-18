@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"io"
-	"log"
 )
 
 type Token int
@@ -21,23 +20,21 @@ const (
 	STRING
 
 	// Control Chars
-	SEMICOLON		// ;
+	SEMICOLON // ;
 
 	// Format Symbols
-	ZERO // 0
-	HASH // #
+	ZERO          // 0
+	HASH          // #
 	QUESTION_MARK // ?
-	PERIOD // .
-	PERCENTAGE // %
-	COMMA // ,
-	SCIENTIFIC // E-, E+, e- or e+
-	
-	
-	OPEN_SQUARE_BRACE	// [
-	CLOSE_SQUARE_BRACE	// ]
+	PERIOD        // .
+	PERCENTAGE    // %
+	COMMA         // ,
+	SCIENTIFIC    // E-, E+, e- or e+
+
+	OPEN_SQUARE_BRACE  // [
+	CLOSE_SQUARE_BRACE // ]
 
 )
-
 
 func isWhiteSpace(ch rune) bool {
 	return ch == ' ' || ch == '\t' || ch == '\n'
@@ -55,22 +52,18 @@ func isDigit(ch rune) bool {
 	return ch == '0'
 }
 
-
 // Lexical Scanner
 type Scanner struct {
 	r *bufio.Reader
 }
 
-
 func NewScanner(r io.Reader) *Scanner {
 	return &Scanner{r: bufio.NewReader(r)}
 }
 
-
 func (s *Scanner) read() rune {
 	ch, _, err := s.r.ReadRune()
 	if err != nil {
-		log.Print(err.Error())
 		return eof
 	}
 	return ch
@@ -79,7 +72,6 @@ func (s *Scanner) read() rune {
 func (s *Scanner) unread() {
 	_ = s.r.UnreadRune()
 }
-
 
 // Scan returns the next token and literal value.
 func (s *Scanner) Scan() (tok Token, lit string) {
@@ -110,10 +102,9 @@ func (s *Scanner) Scan() (tok Token, lit string) {
 	case '#':
 		return HASH, string(ch)
 	}
-	
+
 	return BAD, string(ch)
 }
-
 
 // scanWhitespace consumes the current rune and all contiguous whitespace.
 func (s *Scanner) scanWhitespace() (tok Token, lit string) {
@@ -145,7 +136,14 @@ func (s *Scanner) scanScientific() (tok Token, lit string) {
 	for {
 		if ch := s.read(); ch == eof {
 			break
+		} else {
+
+			if !isScientificStartChar(ch) && !isScientificModifier(ch) {
+				s.unread()
+				break
+			}
+			buf.WriteRune(ch)
 		}
 	}
-	return
+	return SCIENTIFIC, buf.String()
 }
