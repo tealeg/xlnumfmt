@@ -8,11 +8,11 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-func TestIsWhiteSpace(t *testing.T) {
-	assert.True(t, isWhiteSpace(' '))
-	assert.True(t, isWhiteSpace('\t'))
-	assert.True(t, isWhiteSpace('\n'))
-	assert.False(t, isWhiteSpace('a'))
+func TestIsWhitespace(t *testing.T) {
+	assert.True(t, isWhitespace(' '))
+	assert.True(t, isWhitespace('\t'))
+	assert.True(t, isWhitespace('\n'))
+	assert.False(t, isWhitespace('a'))
 }
 
 func TestIsScientificStartChar(t *testing.T) {
@@ -77,6 +77,7 @@ func (s *ScannerSuite) TestUnread() {
 	s.Equal('a', second)
 }
 
+// Scan recognises whitespace and returns the correct type.
 func (s *ScannerSuite) TestScanHandlesWhiteSpeace() {
 	scanner := NewScanner(bytes.NewBufferString(" \t\n "))
 	tok, lit := scanner.Scan()
@@ -84,11 +85,57 @@ func (s *ScannerSuite) TestScanHandlesWhiteSpeace() {
 	s.Equal(" \t\n ", lit)
 }
 
-func (s *ScannerSuite) TestScanHaldesScientific() {
+// Scan recognises Scientific notation and returns the correct type.
+func (s *ScannerSuite) TestScanHandlesScientific() {
 	scanner := NewScanner(bytes.NewBufferString("E+00"))
 	tok, lit := scanner.Scan()
 	s.Equal(SCIENTIFIC, tok)
 	s.Equal("E+00", lit)
+}
+
+// scanScientific returns the full scientific part
+func (s *ScannerSuite) TestScanScientific() {
+	scanner := NewScanner(bytes.NewBufferString("e-0"))
+	tok, lit := scanner.scanScientific()
+	s.Equal(SCIENTIFIC, tok)
+	s.Equal("e-0", lit)
+}
+
+// scanScientific terminates its output when it his a non-scientific
+// character.
+func (s *ScannerSuite) TestScanScientificTerminatesOnNonScientific() {
+	scanner := NewScanner(bytes.NewBufferString("E-00;"))
+	tok, lit := scanner.scanScientific()
+	s.Equal(SCIENTIFIC, tok)
+	s.Equal("E-00", lit)
+}
+
+// scanScientific terminates its output on EOF
+func (s *ScannerSuite) TestScanScientificStopsOnEOF() {
+	scanner := NewScanner(bytes.NewBufferString("E"))
+	tok, lit := scanner.scanScientific()
+	s.Equal(SCIENTIFIC, tok)
+	s.Equal("E", lit)
+	tok, lit = scanner.Scan()
+	s.Equal(EOF, tok)
+}
+
+// scanWhitespace returns the entire contiguous block of whitespace
+func (s *ScannerSuite) TestScanWhitespace() {
+	scanner := NewScanner(bytes.NewBufferString(" \t\n\t E"))
+	tok, lit := scanner.scanWhitespace()
+	s.Equal(WHITESPACE, tok)
+	s.Equal(" \t\n\t ", lit)
+}
+
+// scanWhitespace stops at EOF
+func (s *ScannerSuite) TestScanWhitespaceStopsAtEOF() {
+	scanner := NewScanner(bytes.NewBufferString(" "))
+	tok, lit := scanner.scanWhitespace()
+	s.Equal(WHITESPACE, tok)
+	s.Equal(" ", lit)
+	tok, lit = scanner.Scan()
+	s.Equal(EOF, tok)
 }
 
 func TestScannerSuite(t *testing.T) {

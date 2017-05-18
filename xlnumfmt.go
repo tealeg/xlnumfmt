@@ -36,7 +36,7 @@ const (
 
 )
 
-func isWhiteSpace(ch rune) bool {
+func isWhitespace(ch rune) bool {
 	return ch == ' ' || ch == '\t' || ch == '\n'
 }
 
@@ -81,7 +81,7 @@ func (s *Scanner) Scan() (tok Token, lit string) {
 	// If we see whitespace then consume all contiguous whitespace.
 	// If we see a letter then consume as an ident or reserved word.
 	switch {
-	case isWhiteSpace(ch):
+	case isWhitespace(ch):
 		s.unread()
 		return s.scanWhitespace()
 	case isScientificStartChar(ch):
@@ -117,7 +117,7 @@ func (s *Scanner) scanWhitespace() (tok Token, lit string) {
 	for {
 		if ch := s.read(); ch == eof {
 			break
-		} else if !isWhiteSpace(ch) {
+		} else if !isWhitespace(ch) {
 			s.unread()
 			break
 		} else {
