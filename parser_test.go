@@ -26,7 +26,19 @@ func (s *ParserSuite) TestScan() {
 	tok, lit := parser.scan()
 	s.Equal(SEMICOLON, tok)
 	s.Equal(";", lit)
+}
 
+// Parse returns an XLNumFmt when 4 sections are present
+func (s *ParserSuite) TestParse() {
+	parser := NewParser(bytes.NewBufferString("#.###.00_);[RED](#,###.00);0.00;\"sales \"@"))
+	xlNumFmt, err := parser.Parse()
+	s.Nil(err)
+	s.NotNil(xlNumFmt)
+	s.IsType(&XLNumFmt{}, xlNumFmt)
+	s.NotNil(xlNumFmt.Positive)
+	s.NotNil(xlNumFmt.Negative)
+	s.NotNil(xlNumFmt.Zero)
+	s.NotNil(xlNumFmt.Text)
 }
 
 func TestParserSuite(t *testing.T) {
