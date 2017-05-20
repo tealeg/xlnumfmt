@@ -1,8 +1,8 @@
 package xlnumfmt
 
 import (
-	"io"
 	"fmt"
+	"io"
 )
 
 type Parser struct {
@@ -47,11 +47,11 @@ type Part struct {
 }
 
 type FormatSection struct {
-	Parts []Part 
+	Parts []Part
 }
 
 func NewFormatSection() *FormatSection {
-	return &FormatSection{Parts: make([]Part, 10)}
+	return &FormatSection{Parts: make([]Part, 0)}
 }
 
 type XLNumFmt struct {
@@ -62,7 +62,7 @@ type XLNumFmt struct {
 }
 
 func (p *Parser) Parse() (*XLNumFmt, error) {
-	var sections = make([]*FormatSection, 1, 4)
+	var sections = make([]*FormatSection, 0, 4)
 	var section = NewFormatSection()
 	for {
 		tok, lit := p.scan()
@@ -73,7 +73,7 @@ func (p *Parser) Parse() (*XLNumFmt, error) {
 			if tok == EOF {
 				break
 			}
-			section = NewFormatSection()			
+			section = NewFormatSection()
 		}
 		part := Part{Tok: tok, Lit: lit}
 		section.Parts = append(section.Parts, part)
@@ -86,7 +86,7 @@ func (p *Parser) Parse() (*XLNumFmt, error) {
 		numFmt := &XLNumFmt{
 			Positive: sections[0],
 			Negative: sections[0],
-			Zero: sections[0],
+			Zero:     sections[0],
 		}
 		return numFmt, nil
 	case 2:
@@ -96,7 +96,7 @@ func (p *Parser) Parse() (*XLNumFmt, error) {
 		numFmt := &XLNumFmt{
 			Positive: sections[0],
 			Negative: sections[1],
-			Zero: sections[0],
+			Zero:     sections[0],
 		}
 		return numFmt, nil
 	case 4:
@@ -106,8 +106,8 @@ func (p *Parser) Parse() (*XLNumFmt, error) {
 		numFmt := &XLNumFmt{
 			Positive: sections[0],
 			Negative: sections[1],
-			Zero: sections[2],
-			Text: sections[3],
+			Zero:     sections[2],
+			Text:     sections[3],
 		}
 		return numFmt, nil
 	}
