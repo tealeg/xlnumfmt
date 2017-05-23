@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+// isWhitespace correctly identifies whitespace runes
 func TestIsWhitespace(t *testing.T) {
 	assert.True(t, isWhitespace(' '))
 	assert.True(t, isWhitespace('\t'))
@@ -15,6 +16,7 @@ func TestIsWhitespace(t *testing.T) {
 	assert.False(t, isWhitespace('a'))
 }
 
+// isScientificStartChar correctly identifies 'e' notation.
 func TestIsScientificStartChar(t *testing.T) {
 	assert.True(t, isScientificStartChar('e'))
 	assert.True(t, isScientificStartChar('E'))
@@ -22,12 +24,15 @@ func TestIsScientificStartChar(t *testing.T) {
 	assert.False(t, isScientificStartChar('F'))
 }
 
+// isScientificModifier correctly identifies modifier parts of 'e'
+// notation.
 func TestIsScientificModifier(t *testing.T) {
 	assert.True(t, isScientificModifier('+'))
 	assert.True(t, isScientificModifier('-'))
 	assert.True(t, isScientificModifier('0'))
 }
 
+// isDigit matches exactly '0', and nothing else.
 func TestIsDigit(t *testing.T) {
 	assert.True(t, isDigit('0'))
 
@@ -36,6 +41,12 @@ func TestIsDigit(t *testing.T) {
 	assert.False(t, isDigit('1'))
 
 	assert.False(t, isDigit('a'))
+}
+
+// isSkip matches only the '_' character.
+func TestIsSkip(t *testing.T) {
+	assert.True(t, isSkip('_'))
+	assert.False(t, isSkip('#'))
 }
 
 type ScannerSuite struct {
@@ -131,6 +142,14 @@ func (s *ScannerSuite) TestScanHandlesScientific() {
 	tok, lit := scanner.Scan()
 	s.Equal(SCIENTIFIC, tok)
 	s.Equal("E+00", lit)
+}
+
+// Scan recognise Skip characters and returns the correct type.
+func (s *ScannerSuite) TestScannerHandleSkip() {
+	scanner := NewScanner(bytes.NewBufferString("_("))
+	tok, lit := scanner.Scan()
+	s.Equal(SKIP, tok)
+	s.Equal("(", lit)
 }
 
 // scanScientific returns the full scientific part

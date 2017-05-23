@@ -30,6 +30,7 @@ const (
 	PERCENTAGE    // %
 	COMMA         // ,
 	SCIENTIFIC    // E-, E+, e- or e+
+	SKIP          // _
 
 	OPEN_SQUARE_BRACE  // [
 	CLOSE_SQUARE_BRACE // ]
@@ -50,6 +51,10 @@ func isScientificModifier(ch rune) bool {
 
 func isDigit(ch rune) bool {
 	return ch == '0'
+}
+
+func isSkip(ch rune) bool {
+	return ch == '_'
 }
 
 // Lexical Scanner
@@ -87,6 +92,10 @@ func (s *Scanner) Scan() (tok Token, lit string) {
 	case isScientificStartChar(ch):
 		s.unread()
 		return s.scanScientific()
+	case isSkip(ch):
+		// The skipchar itself we just throw away, so there's
+		// no need to unread it.
+		return s.scanSkip()
 	}
 
 	// Otherwise read the individual character.
@@ -146,4 +155,13 @@ func (s *Scanner) scanScientific() (tok Token, lit string) {
 		}
 	}
 	return SCIENTIFIC, buf.String()
+}
+
+// scanSkip consumes the rune that follows a skipChar.
+func (s *Scanner) scanSkip() (tok Token, lit string) {
+	ch := s.read()
+	if ch == eof {
+		return EOF, ""
+	}
+	return SKIP, string(ch)
 }
