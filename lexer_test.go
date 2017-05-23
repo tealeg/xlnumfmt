@@ -197,6 +197,24 @@ func (s *ScannerSuite) TestScanWhitespaceStopsAtEOF() {
 	s.Equal(EOF, tok)
 }
 
+// scanSkip consumes the first char it's presented with. For
+// efficiency we assume that the skip run ("_") has already been
+// consumed and no unread() call has been made.
+func (s *ScannerSuite) TestScanSkipConsumesAChar() {
+	scanner := NewScanner(bytes.NewBufferString("!"))
+	tok, lit := scanner.scanSkip()
+	s.Equal(SKIP, tok)
+	s.Equal("!", lit)
+}
+
+// scanSkip will return EOF if it reads EOF.
+func (s *ScannerSuite) TestScanSkipCanReturnEOF() {
+	scanner := NewScanner(bytes.NewBufferString(""))
+	tok, lit := scanner.scanSkip()
+	s.Equal(EOF, tok)
+	s.Equal("", lit)
+}
+
 func TestScannerSuite(t *testing.T) {
 	suite.Run(t, new(ScannerSuite))
 }
