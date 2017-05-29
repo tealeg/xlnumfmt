@@ -31,12 +31,26 @@ func (s *ParserSuite) TestScan() {
 // Parse returns an XLNumFmt with positive, negative, zero and text
 // FormatSection instances when 4 sections are present in the string.
 func (s *ParserSuite) TestParse4Sections() {
-	parser := NewParser(bytes.NewBufferString("#.###.00_);[RED](#,###.00);0.00;\"sales \"@"))
+	parser := NewParser(bytes.NewBufferString("#,###.00_);[RED](#,###.00);0.00;\"sales \"@"))
 	xlNumFmt, err := parser.Parse()
 	s.Nil(err)
 	s.NotNil(xlNumFmt)
 	s.IsType(&XLNumFmt{}, xlNumFmt)
 	s.NotNil(xlNumFmt.Positive)
+	s.Equal(9, len(xlNumFmt.Positive.Parts))
+	s.Equal(
+		[]Part{
+			Part{Tok: HASH, Lit: "#"},
+			Part{Tok: COMMA, Lit: ","},
+			Part{Tok: HASH, Lit: "#"},
+			Part{Tok: HASH, Lit: "#"},
+			Part{Tok: HASH, Lit: "#"},
+			Part{Tok: PERIOD, Lit: "."},
+			Part{Tok: ZERO, Lit: "0"},
+			Part{Tok: ZERO, Lit: "0"},
+			Part{Tok: SKIP, Lit: ")"},
+		},
+		xlNumFmt.Positive.Parts)
 	s.NotNil(xlNumFmt.Negative)
 	s.NotNil(xlNumFmt.Zero)
 	s.NotNil(xlNumFmt.Text)
