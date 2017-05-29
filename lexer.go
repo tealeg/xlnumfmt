@@ -102,6 +102,12 @@ func (s *Scanner) Scan() (tok Token, lit string) {
 	switch ch {
 	case eof:
 		return EOF, ""
+	case '0':
+		return ZERO, string(ch)
+	case ',':
+		return COMMA, string(ch)
+	case '.':
+		return PERIOD, string(ch)		
 	case ';':
 		return SEMICOLON, string(ch)
 	case '[':
