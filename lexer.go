@@ -32,9 +32,9 @@ const (
 	SCIENTIFIC    // E-, E+, e- or e+
 	SKIP          // _
 
-	OPEN_SQUARE_BRACE  // [
-	CLOSE_SQUARE_BRACE // ]
+	SYMBOL // One of $-+():space
 
+	COLOR // A color name between square brackets, e.g. [RED].
 )
 
 func isWhitespace(ch rune) bool {
@@ -55,6 +55,10 @@ func isDigit(ch rune) bool {
 
 func isSkip(ch rune) bool {
 	return ch == '_'
+}
+
+func isColorStart(ch rune) bool {
+	return ch == '['
 }
 
 // Lexical Scanner
@@ -107,13 +111,9 @@ func (s *Scanner) Scan() (tok Token, lit string) {
 	case ',':
 		return COMMA, string(ch)
 	case '.':
-		return PERIOD, string(ch)		
+		return PERIOD, string(ch)
 	case ';':
 		return SEMICOLON, string(ch)
-	case '[':
-		return OPEN_SQUARE_BRACE, string(ch)
-	case ']':
-		return CLOSE_SQUARE_BRACE, string(ch)
 	case '#':
 		return HASH, string(ch)
 	}

@@ -49,6 +49,14 @@ func TestIsSkip(t *testing.T) {
 	assert.False(t, isSkip('#'))
 }
 
+// isColorStart matches only the '[' character.
+func TestIsColorStart(t *testing.T) {
+	assert.True(t, isColorStart('['))
+	assert.False(t, isColorStart(']'))
+	assert.False(t, isColorStart('A'))
+	assert.False(t, isColorStart('1'))
+}
+
 type ScannerSuite struct {
 	suite.Suite
 }
@@ -96,23 +104,7 @@ func (s *ScannerSuite) TestScanHandlesSemicolon() {
 	s.Equal(";", lit)
 }
 
-// Scanner.Scan recognises opening square braces
-func (s *ScannerSuite) TestScanHandlesOpenSquareBrace() {
-	scanner := NewScanner(bytes.NewBufferString("["))
-	tok, lit := scanner.Scan()
-	s.Equal(OPEN_SQUARE_BRACE, tok)
-	s.Equal("[", lit)
-}
-
-// Scanner.Scan recognises closing square braces
-func (s *ScannerSuite) TestScanHandlesCloseSquareBrace() {
-	scanner := NewScanner(bytes.NewBufferString("]"))
-	tok, lit := scanner.Scan()
-	s.Equal(CLOSE_SQUARE_BRACE, tok)
-	s.Equal("]", lit)
-}
-
-// Scanner.Scan recognises closing square braces
+// Scanner.Scan recognises hashes
 func (s *ScannerSuite) TestScanHandlesHash() {
 	scanner := NewScanner(bytes.NewBufferString("#"))
 	tok, lit := scanner.Scan()
