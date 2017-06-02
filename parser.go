@@ -74,6 +74,7 @@ func (p *Parser) Parse() (*XLNumFmt, error) {
 				break
 			}
 			section = NewFormatSection()
+			continue
 		}
 		part := Part{Tok: tok, Lit: lit}
 		section.Parts = append(section.Parts, part)

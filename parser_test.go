@@ -52,6 +52,22 @@ func (s *ParserSuite) TestParse4Sections() {
 		},
 		xlNumFmt.Positive.Parts)
 	s.NotNil(xlNumFmt.Negative)
+	s.Equal(11, len(xlNumFmt.Negative.Parts))
+	s.Equal(
+		[]Part{
+			Part{Tok: COLOR, Lit: "RED"},
+			Part{Tok: SYMBOL, Lit: "("},
+			Part{Tok: HASH, Lit: "#"},
+			Part{Tok: COMMA, Lit: ","},
+			Part{Tok: HASH, Lit: "#"},
+			Part{Tok: HASH, Lit: "#"},
+			Part{Tok: HASH, Lit: "#"},
+			Part{Tok: PERIOD, Lit: "."},
+			Part{Tok: ZERO, Lit: "0"},
+			Part{Tok: ZERO, Lit: "0"},
+			Part{Tok: SYMBOL, Lit: ")"},
+		},
+		xlNumFmt.Negative.Parts)
 	s.NotNil(xlNumFmt.Zero)
 	s.NotNil(xlNumFmt.Text)
 }

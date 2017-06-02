@@ -49,12 +49,20 @@ func TestIsSkip(t *testing.T) {
 	assert.False(t, isSkip('#'))
 }
 
-// isColorStart matches only the '[' character.
+// isColorStartChar matches only the '[' character.
 func TestIsColorStart(t *testing.T) {
-	assert.True(t, isColorStart('['))
-	assert.False(t, isColorStart(']'))
-	assert.False(t, isColorStart('A'))
-	assert.False(t, isColorStart('1'))
+	assert.True(t, isColorStartChar('['))
+	assert.False(t, isColorStartChar(']'))
+	assert.False(t, isColorStartChar('A'))
+	assert.False(t, isColorStartChar('1'))
+}
+
+// isColorEndChar matches only the ']' character.
+func TestIsColorEnd(t *testing.T) {
+	assert.True(t, isColorEndChar(']'))
+	assert.False(t, isColorEndChar('['))
+	assert.False(t, isColorEndChar('A'))
+	assert.False(t, isColorEndChar('1'))
 }
 
 type ScannerSuite struct {
@@ -136,6 +144,14 @@ func (s *ScannerSuite) TestScanHandlesScientific() {
 	s.Equal("E+00", lit)
 }
 
+// Scan recognises color definitions and returns the correct type
+func (s *ScannerSuite) TestScanHandlesColor() {
+	scanner := NewScanner(bytes.NewBufferString("[RED]"))
+	tok, lit := scanner.Scan()
+	s.Equal(COLOR, tok)
+	s.Equal("RED", lit)
+}
+
 // Scan recognise Skip characters and returns the correct type.
 func (s *ScannerSuite) TestScannerHandleSkip() {
 	scanner := NewScanner(bytes.NewBufferString("_("))
@@ -203,6 +219,28 @@ func (s *ScannerSuite) TestScanSkipConsumesAChar() {
 func (s *ScannerSuite) TestScanSkipCanReturnEOF() {
 	scanner := NewScanner(bytes.NewBufferString(""))
 	tok, lit := scanner.scanSkip()
+	s.Equal(EOF, tok)
+	s.Equal("", lit)
+}
+
+// scanColor consumes all characters that follow the the color start
+// char ('[') until it reaches the stop char (']') .
+func (s *ScannerSuite) TestScanColorConsumsAllCharsBetweenSquareBraces() {
+	// Note we don't include the '[' here, as this is conusmed by
+	// the surrounding Scan process usually.
+	scanner := NewScanner(bytes.NewBufferString("RED]"))
+	tok, lit := scanner.scanColor()
+	s.Equal(COLOR, tok)
+	s.Equal("RED", lit)
+}
+
+// scanColor will terminate a color block when it hits EOF
+func (s *ScannerSuite) TestScanColorTerminatesOnEOF() {
+	scanner := NewScanner(bytes.NewBufferString("RED"))
+	tok, lit := scanner.scanColor()
+	s.Equal(COLOR, tok)
+	s.Equal("RED", lit)
+	tok, lit = scanner.Scan()
 	s.Equal(EOF, tok)
 	s.Equal("", lit)
 }

@@ -57,8 +57,12 @@ func isSkip(ch rune) bool {
 	return ch == '_'
 }
 
-func isColorStart(ch rune) bool {
+func isColorStartChar(ch rune) bool {
 	return ch == '['
+}
+
+func isColorEndChar(ch rune) bool {
+	return ch == ']'
 }
 
 // Lexical Scanner
@@ -90,16 +94,20 @@ func (s *Scanner) Scan() (tok Token, lit string) {
 	// If we see whitespace then consume all contiguous whitespace.
 	// If we see a letter then consume as an ident or reserved word.
 	switch {
+	case isSkip(ch):
+		// The skipchar itself we just throw away, so there's
+		// no need to unread it.
+		return s.scanSkip()
 	case isWhitespace(ch):
 		s.unread()
 		return s.scanWhitespace()
 	case isScientificStartChar(ch):
 		s.unread()
 		return s.scanScientific()
-	case isSkip(ch):
-		// The skipchar itself we just throw away, so there's
-		// no need to unread it.
-		return s.scanSkip()
+	case isColorStartChar(ch):
+		// We'll throw aawy the start char, so no need to
+		// unread.
+		return s.scanColor()
 	}
 
 	// Otherwise read the individual character.
@@ -170,4 +178,22 @@ func (s *Scanner) scanSkip() (tok Token, lit string) {
 		return EOF, ""
 	}
 	return SKIP, string(ch)
+}
+
+// scanColor consumes the name of a color and throws away the color
+// termination char, ']'.
+func (s *Scanner) scanColor() (tok Token, lit string) {
+	var buf bytes.Buffer
+	for {
+		if ch := s.read(); ch == eof {
+			break
+		} else {
+			if isColorEndChar(ch) {
+				break
+			}
+			buf.WriteRune(ch)
+		}
+
+	}
+	return COLOR, buf.String()
 }
