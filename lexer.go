@@ -65,6 +65,10 @@ func isColorEndChar(ch rune) bool {
 	return ch == ']'
 }
 
+func isSymbol(ch rune) bool {
+	return ch == '$' || ch == '-' || ch == '+' || ch == '(' || ch == ')'
+}
+
 // Lexical Scanner
 type Scanner struct {
 	r *bufio.Reader
@@ -108,6 +112,8 @@ func (s *Scanner) Scan() (tok Token, lit string) {
 		// We'll throw aawy the start char, so no need to
 		// unread.
 		return s.scanColor()
+	case isSymbol(ch):
+		return SYMBOL, string(ch)
 	}
 
 	// Otherwise read the individual character.

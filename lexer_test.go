@@ -65,6 +65,16 @@ func TestIsColorEnd(t *testing.T) {
 	assert.False(t, isColorEndChar('1'))
 }
 
+// isSymbol mathces the characters: $-+()
+func TestIsSymbol(t *testing.T) {
+	assert.True(t, isSymbol('$'))
+	assert.True(t, isSymbol('-'))
+	assert.True(t, isSymbol('+'))
+	assert.True(t, isSymbol('('))
+	assert.True(t, isSymbol(')'))
+	assert.False(t, isSymbol('#'))
+}
+
 type ScannerSuite struct {
 	suite.Suite
 }
@@ -110,6 +120,26 @@ func (s *ScannerSuite) TestScanHandlesSemicolon() {
 	tok, lit := scanner.Scan()
 	s.Equal(SEMICOLON, tok)
 	s.Equal(";", lit)
+}
+
+// Scanner.Scan recognises Symbol runes
+func (s *ScannerSuite) TestScanHandlesSymbols() {
+	scanner := NewScanner(bytes.NewBufferString("$-+()"))
+	tok, lit := scanner.Scan()
+	s.Equal(SYMBOL, tok)
+	s.Equal("$", lit)
+	tok, lit = scanner.Scan()
+	s.Equal(SYMBOL, tok)
+	s.Equal("-", lit)
+	tok, lit = scanner.Scan()
+	s.Equal(SYMBOL, tok)
+	s.Equal("+", lit)
+	tok, lit = scanner.Scan()
+	s.Equal(SYMBOL, tok)
+	s.Equal("(", lit)
+	tok, lit = scanner.Scan()
+	s.Equal(SYMBOL, tok)
+	s.Equal(")", lit)
 }
 
 // Scanner.Scan recognises hashes
