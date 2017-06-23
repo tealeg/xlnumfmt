@@ -18,6 +18,7 @@ const (
 
 	// Literals
 	STRING
+	CHAR
 
 	// Control Chars
 	SEMICOLON // ;
@@ -31,6 +32,8 @@ const (
 	COMMA         // ,
 	SCIENTIFIC    // E-, E+, e- or e+
 	SKIP          // _
+
+	PLACEHOLDER // @
 
 	SYMBOL // One of $-+():space
 
@@ -67,6 +70,10 @@ func isColorEndChar(ch rune) bool {
 
 func isSymbol(ch rune) bool {
 	return ch == '$' || ch == '-' || ch == '+' || ch == '(' || ch == ')'
+}
+
+func isStringDelimiter(ch rune) bool {
+	return ch == '"'
 }
 
 // Lexical Scanner
@@ -112,6 +119,9 @@ func (s *Scanner) Scan() (tok Token, lit string) {
 		// We'll throw aawy the start char, so no need to
 		// unread.
 		return s.scanColor()
+	case isStringDelimiter(ch):
+		// We can throw away the string delimiter
+		return s.scanString()
 	case isSymbol(ch):
 		return SYMBOL, string(ch)
 	}
@@ -131,8 +141,9 @@ func (s *Scanner) Scan() (tok Token, lit string) {
 	case '#':
 		return HASH, string(ch)
 	}
+	return STRING, string(ch)
 
-	return BAD, string(ch)
+	// return BAD, string(ch)
 }
 
 // scanWhitespace consumes the current rune and all contiguous whitespace.
@@ -186,20 +197,30 @@ func (s *Scanner) scanSkip() (tok Token, lit string) {
 	return SKIP, string(ch)
 }
 
-// scanColor consumes the name of a color and throws away the color
-// termination char, ']'.
-func (s *Scanner) scanColor() (tok Token, lit string) {
+// scanTerminated is a utility function to abstract away boiler plate
+// in functions that scan to some termination character.
+func (s *Scanner) scanTerminated(isTerminated func(ch rune) bool) string {
 	var buf bytes.Buffer
 	for {
 		if ch := s.read(); ch == eof {
 			break
 		} else {
-			if isColorEndChar(ch) {
+			if isTerminated(ch) {
 				break
 			}
 			buf.WriteRune(ch)
 		}
-
 	}
-	return COLOR, buf.String()
+	return buf.String()
+}
+
+// scanColor consumes the name of a color and throws away the color
+// termination char, ']'.
+func (s *Scanner) scanColor() (tok Token, lit string) {
+	return COLOR, s.scanTerminated(isColorEndChar)
+}
+
+// scanString consumes all characters between a pair of string delimiters (double quotes).
+func (s *Scanner) scanString() (tok Token, lit string) {
+	return STRING, s.scanTerminated(isStringDelimiter)
 }

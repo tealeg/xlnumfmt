@@ -36,6 +36,8 @@ func (s *ParserSuite) TestParse4Sections() {
 	s.Nil(err)
 	s.NotNil(xlNumFmt)
 	s.IsType(&XLNumFmt{}, xlNumFmt)
+
+	// Positive format
 	s.NotNil(xlNumFmt.Positive)
 	s.Equal(9, len(xlNumFmt.Positive.Parts))
 	s.Equal(
@@ -51,6 +53,8 @@ func (s *ParserSuite) TestParse4Sections() {
 			Part{Tok: SKIP, Lit: ")"},
 		},
 		xlNumFmt.Positive.Parts)
+
+	// Negative format
 	s.NotNil(xlNumFmt.Negative)
 	s.Equal(11, len(xlNumFmt.Negative.Parts))
 	s.Equal(
@@ -68,8 +72,30 @@ func (s *ParserSuite) TestParse4Sections() {
 			Part{Tok: SYMBOL, Lit: ")"},
 		},
 		xlNumFmt.Negative.Parts)
+
+	// Zero value format
 	s.NotNil(xlNumFmt.Zero)
+	s.Equal(4, len(xlNumFmt.Zero.Parts))
+	s.Equal(
+		[]Part{
+			Part{Tok: ZERO, Lit: "0"},
+			Part{Tok: PERIOD, Lit: "."},
+			Part{Tok: ZERO, Lit: "0"},
+			Part{Tok: ZERO, Lit: "0"},
+		},
+		xlNumFmt.Zero.Parts)
+
+	// Text value format
 	s.NotNil(xlNumFmt.Text)
+	// \"sales \"@
+	s.Equal(9, len(xlNumFmt.Text.Parts))
+	s.Equal(
+		[]Part{
+			Part{Tok: STRING, Lit: "\"sales \""},
+			Part{Tok: PLACEHOLDER, Lit: "@"},
+		},
+		xlNumFmt.Text.Parts)
+
 }
 
 // Parse returns an XLNumFmt with positive, negative, and zero

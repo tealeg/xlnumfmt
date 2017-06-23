@@ -75,6 +75,12 @@ func TestIsSymbol(t *testing.T) {
 	assert.False(t, isSymbol('#'))
 }
 
+// isStringDelimiter matches the double quote
+func TestIsStringDelimiter(t *testing.T) {
+	assert.True(t, isStringDelimiter('"'))
+	assert.False(t, isStringDelimiter('\''))
+}
+
 type ScannerSuite struct {
 	suite.Suite
 }
@@ -151,7 +157,7 @@ func (s *ScannerSuite) TestScanHandlesHash() {
 }
 
 // Scanner.Scan recognises a bad character
-func (s *ScannerSuite) TestScanHandlesBad() {
+func (s *ScannerSuite) TestScanHandlesChar() {
 	scanner := NewScanner(bytes.NewBufferString("¡"))
 	tok, lit := scanner.Scan()
 	s.Equal(BAD, tok)
@@ -253,6 +259,26 @@ func (s *ScannerSuite) TestScanSkipCanReturnEOF() {
 	s.Equal("", lit)
 }
 
+// scanTerminated scans all chars until one matches a provided predicate.
+func (s *ScannerSuite) TestScanTerminated() {
+	scanner := NewScanner(bytes.NewBufferString("foo!bar"))
+	predicate := func(ch rune) bool { return ch == '!' }
+	lit := scanner.scanTerminated(predicate)
+	s.Equal("foo", lit)
+}
+
+// scanTerminated will terminate a block when it hits EOF
+func (s *ScannerSuite) TestScanTerminatedTreatsEOFAsTerminator() {
+	scanner := NewScanner(bytes.NewBufferString("RED"))
+	// This predicate is abritrary, it will never match
+	predicate := func(ch rune) bool { return ch == '%' }
+	lit := scanner.scanTerminated(predicate)
+	s.Equal("RED", lit)
+	tok, lit := scanner.Scan()
+	s.Equal(EOF, tok)
+	s.Equal("", lit)
+}
+
 // scanColor consumes all characters that follow the the color start
 // char ('[') until it reaches the stop char (']') .
 func (s *ScannerSuite) TestScanColorConsumsAllCharsBetweenSquareBraces() {
@@ -264,15 +290,11 @@ func (s *ScannerSuite) TestScanColorConsumsAllCharsBetweenSquareBraces() {
 	s.Equal("RED", lit)
 }
 
-// scanColor will terminate a color block when it hits EOF
-func (s *ScannerSuite) TestScanColorTerminatesOnEOF() {
-	scanner := NewScanner(bytes.NewBufferString("RED"))
-	tok, lit := scanner.scanColor()
-	s.Equal(COLOR, tok)
-	s.Equal("RED", lit)
-	tok, lit = scanner.Scan()
-	s.Equal(EOF, tok)
-	s.Equal("", lit)
+func (s *ScannerSuite) TestScanStringConsumesAllTheCharactersBetweenAPairOfDoubleQuotes() {
+	scanner := NewScanner(bytes.NewBufferString("foo\" @"))
+	tok, lit := scanner.scanString()
+	s.Equal(STRING, tok)
+	s.Equal("foo", lit)
 }
 
 func TestScannerSuite(t *testing.T) {
